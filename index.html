@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Smart Dashboard V15 (TimeStamp)</title>
+    <title>My Smart Dashboard V15 (Sheet Export)</title>
     <style>
         :root {
             /* Light Theme Variables */
@@ -642,10 +642,8 @@
         
         if (el.isContentEditable) { // For Rich Text Div (Note)
             el.focus();
-            // 맨 뒤에 추가
             const textNode = document.createTextNode(ts);
             el.appendChild(textNode);
-            // 커서를 끝으로
             const range = document.createRange();
             const sel = window.getSelection();
             range.selectNodeContents(el);
@@ -659,7 +657,6 @@
             const before = val.substring(0, start);
             const after = val.substring(end);
             
-            // 앞부분이 있고 줄바꿈이 아니면 줄바꿈 추가
             let prefix = "";
             if (before.length > 0 && !before.endsWith('\n')) {
                 prefix = "\n";
@@ -677,15 +674,11 @@
            const el = document.getElementById(id);
            if(el.value.trim() === "") {
                el.value = getDateString();
-           } else {
-               // 이미 내용이 있으면 건드리지 않거나, 원하면 아래 주석 해제하여 추가 가능
-               // el.value += "\n" + getDateString();
            }
         });
         if(window.appSave) window.appSave();
     }
 
-    // 빈 칸일 때 포커스하면 자동으로 날짜 입력
     window.autoInsertDate = function(el) {
         if(el.value.trim() === "") {
             el.value = getDateString();
@@ -895,8 +888,6 @@
         box.innerHTML = html;
     }
 
-    // --- [Core Logic] Time/Date Parsing & Formatting ---
-
     function getFormattedDateTime() {
         const now = new Date();
         const yy = now.getFullYear().toString().slice(-2);
@@ -922,7 +913,6 @@
         }
     }
 
-    // [New] Smart Time Parsing Logic
     function parseAndFormatTime(input) {
         const now = new Date();
         const nums = input.replace(/[^0-9]/g, '');
@@ -933,7 +923,6 @@
         let hour = 0;
         let minute = 0;
 
-        // 1. Full Format (YYMMDDHHMM - 10 digits)
         if (nums.length === 10) {
             year = 2000 + parseInt(nums.substring(0, 2));
             month = parseInt(nums.substring(2, 4));
@@ -941,7 +930,6 @@
             hour = parseInt(nums.substring(6, 8));
             minute = parseInt(nums.substring(8, 10));
         }
-        // 2. Time Only (HHMM or HMM - 3~4 digits) -> Use Today's Date
         else if (nums.length === 3 || nums.length === 4) {
             if (nums.length === 4) {
                 hour = parseInt(nums.substring(0, 2));
@@ -951,7 +939,7 @@
                 minute = parseInt(nums.substring(1, 3));
             }
         } else {
-            return null; // Invalid format
+            return null;
         }
 
         if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
@@ -968,7 +956,6 @@
     }
 
     function handleTimeBlur(el) {
-        // Only run if user typed something manually
         if (el.value && !el.value.includes('년')) {
             const formatted = parseAndFormatTime(el.value);
             if (formatted) {
@@ -1055,7 +1042,7 @@
             const input = prompt("시간(HHMM) 또는 날짜+시간(YYMMDDHHMM) 입력:");
             if (input) {
                 ctxTarget.value = input; 
-                handleTimeBlur(ctxTarget); // Trigger parsing
+                handleTimeBlur(ctxTarget); 
             }
         } else if (action === 'insert') {
             ctxTarget.value = getFormattedDateTime();
@@ -1103,36 +1090,41 @@
     }
 
     function exportData() {
-        // [중요] 새로 배포한 구글 앱스 스크립트 URL을 여기에 넣으세요
-        const scriptURL = "여기에_구글_웹앱_URL_붙여넣기"; 
+        const scriptURL = "https://script.google.com/macros/s/AKfycby3BlkrLrvNMi82SBd98RGPL52_hlz7rDCJyBkdMgJIlOsNpoD0LlMP3xkV2ocwabP9zQ/exec"; 
 
         if(!scriptURL || scriptURL.includes("여기에")) {
             alert("코드를 수정하여 'scriptURL' 변수에 구글 앱스 스크립트 배포 주소를 입력해주세요!");
             return;
         }
 
-        if(!confirm("체크된 항목만 내보내고 화면을 정리하시겠습니까?")) return;
+        if(!confirm("체크된 항목을 내보내고 초기화 하시겠습니까?")) return;
 
         const btn = document.querySelector('.btn-export');
         const originalText = btn.innerText;
         btn.innerText = "전송 중...";
 
-        const getPrioShape = (val) => {
-            if(val === '3') return '★';
-            if(val === '2') return '■';
-            if(val === '1') return '●';
-            return '○';
+        // [날짜 포맷 생성] 2025-12-09-164830
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}-${hh}${min}${ss}`;
+
+        const getPrioLabel = (val) => {
+            if(val === '3') return '업무';
+            if(val === '2') return '개인';
+            if(val === '1') return '교회';
+            return '기타';
         };
 
+        // 1. Priority Data
         const priRows = Array.from(document.querySelectorAll('#priorityBox .priority-row'));
-        const exportPri = priRows
-            .filter(r => r.querySelector('input[type="checkbox"]').checked)
-            .map(r => r.querySelector('textarea').value);
-        
-        const keptPriTexts = priRows
-            .filter(r => !r.querySelector('input[type="checkbox"]').checked && r.querySelector('textarea').value.trim() !== "")
-            .map(r => r.querySelector('textarea').value);
+        const exportPri = priRows.map(r => r.querySelector('textarea').value); // 전체 다 보냄
 
+        // 2. ToDo Data (체크된 것만)
         const allBlockEls = Array.from(document.querySelectorAll('.todo-block'));
         const allTodosRaw = allBlockEls.map(r => ({
             s: r.querySelector('.t-start').value,
@@ -1142,18 +1134,20 @@
             t: r.querySelector('.todo-content').value
         }));
 
+        // 체크된 항목만 추출해서 전송
         const exportTodos = allTodosRaw
             .filter(t => t.c === true)
             .map(t => ({
                 s: t.s,
                 e: t.e,
-                c: t.c,
-                p: getPrioShape(t.p_val), 
+                p: getPrioLabel(t.p_val), 
                 t: t.t
             }));
         
+        // 체크 안 된 항목 (복구용)
         const keptTodos = allTodosRaw.filter(t => t.c === false && t.t.trim() !== "");
 
+        // 3. TimeLine Data (내용 있는 것만)
         const timelineData = Array.from(document.querySelectorAll('.timeline-block'))
             .map(b => ({
                 s: b.querySelector('.tm-start').value,
@@ -1163,10 +1157,11 @@
             .filter(l => l.t.trim() !== ""); 
 
         const payload = {
+            date: dateStr,
             pri: exportPri,
             todo: exportTodos, 
             line: timelineData, 
-            note: document.getElementById('mainNote').innerText,
+            note: document.getElementById('mainNote').innerText, // 텍스트만 추출
             sp: [
                 document.getElementById('sp1').value, 
                 document.getElementById('sp2').value, 
@@ -1186,34 +1181,36 @@
         .then(response => response.json())
         .then(data => {
             if(data.result === 'success') {
-                alert("성공적으로 저장되었습니다!\n각 항목이 개별 행으로 입력됩니다.");
-                resetAndRestore(keptTodos, keptPriTexts);
+                alert("성공적으로 저장되었습니다!\n체크되지 않은 ToDo만 남기고 초기화합니다.");
+                resetAndRestore(keptTodos);
             } else {
                 alert("전송 실패: " + data.error);
             }
         })
         .catch(error => {
             console.error('Export Error:', error);
-            alert("전송 요청 완료! (데이터가 시트에 들어갔는지 확인하세요)\n화면을 정리합니다.");
-            resetAndRestore(keptTodos, keptPriTexts);
+            alert("전송 요청 완료! (데이터 확인 요망)\n화면을 정리합니다.");
+            resetAndRestore(keptTodos);
         })
         .finally(() => {
             btn.innerText = originalText;
         });
     }
 
-    function resetAndRestore(keptTodos, keptPriTexts) {
-        const priRows = document.querySelectorAll('#priorityBox .priority-row');
-        priRows.forEach(r => {
-            r.querySelector('textarea').value = '';
-            r.querySelector('input[type="checkbox"]').checked = false;
+    function resetAndRestore(keptTodos) {
+        // 1. 전체 초기화 (Priority, TimeLine, Note, Sp, Sum)
+        document.querySelectorAll('#priorityBox .priority-row').forEach(row => {
+            row.querySelector('textarea').value = '';
+            row.querySelector('input[type="checkbox"]').checked = false;
         });
 
         document.querySelectorAll('.timeline-block input').forEach(e => { e.value = ''; e.classList.remove('filled'); });
         document.querySelectorAll('.timeline-block textarea').forEach(e => e.value = '');
+        
         document.getElementById('mainNote').innerHTML = '';
         ['sp1', 'sp2', 'sp3', 'thanksText', 'summaryText'].forEach(id => document.getElementById(id).value = '');
 
+        // 2. ToDo 전체 초기화
         const blocks = document.querySelectorAll('.todo-block');
         blocks.forEach(r => {
             r.querySelector('.t-start').value = '';
@@ -1226,22 +1223,18 @@
             if(p) updatePriorityUI(p, '0'); 
         });
 
-        if (keptPriTexts && keptPriTexts.length > 0) {
-            keptPriTexts.forEach((txt, idx) => {
-                if (priRows[idx]) {
-                    priRows[idx].querySelector('textarea').value = txt;
-                }
-            });
-        }
-
+        // 3. 체크 안 된 ToDo만 상단부터 다시 채워넣기 (Shift Up)
         keptTodos.forEach((item, index) => {
             if(blocks[index]) {
                 blocks[index].querySelector('.t-start').value = item.s;
                 blocks[index].querySelector('.t-end').value = item.e; 
                 blocks[index].querySelector('.todo-content').value = item.t;
                 
+                // 체크는 해제 상태로 유지 (새로 시작하니까)
+                
                 const p = blocks[index].querySelector('.priority-current');
-                if(p) updatePriorityUI(p, item.p_val);
+                // 기존 item.p_val 값을 이용하여 UI 업데이트. p_val이 없는 경우 '0'으로 처리
+                if(p) updatePriorityUI(p, item.p_val || '0');
             }
         });
 
