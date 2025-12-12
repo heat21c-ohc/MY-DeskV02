@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Smart Dashboard V15 (Sheet Export)</title>
+    <title>My Smart Dashboard V16 (Priority Logic Updated)</title>
     <style>
         :root {
             /* Light Theme Variables */
@@ -200,7 +200,7 @@
 
 <div id="loginOverlay">
     <div class="login-card">
-        <h2 style="color:#1e3a8a; margin-bottom:10px;">My Cloud Dashboard V15</h2>
+        <h2 style="color:#1e3a8a; margin-bottom:10px;">My Cloud Dashboard V16</h2>
         <p style="color:#666; font-size:14px; margin-bottom:30px;">
             PC와 스마트폰 동기화 지원<br>로그인하여 시작하세요.
         </p>
@@ -216,7 +216,7 @@
 </div>
 
 <header>
-    <h1>Dashboard V15</h1>
+    <h1>Dashboard V16</h1>
     <div class="controls">
         <span class="date-display" id="headerDate">Loading...</span>
         <button class="btn btn-theme" onclick="toggleTheme()" title="다크 모드 전환">🌙</button>
@@ -1120,9 +1120,18 @@
             return '기타';
         };
 
-        // 1. Priority Data
+        // 1. Priority Data (체크된 것만 추출)
         const priRows = Array.from(document.querySelectorAll('#priorityBox .priority-row'));
-        const exportPri = priRows.map(r => r.querySelector('textarea').value); // 전체 다 보냄
+        
+        // Export only checked items
+        const exportPri = priRows
+            .filter(r => r.querySelector('input[type="checkbox"]').checked)
+            .map(r => r.querySelector('textarea').value);
+
+        // Keep unchecked items (that have content)
+        const keptPri = priRows
+            .filter(r => !r.querySelector('input[type="checkbox"]').checked && r.querySelector('textarea').value.trim() !== "")
+            .map(r => r.querySelector('textarea').value);
 
         // 2. ToDo Data (체크된 것만)
         const allBlockEls = Array.from(document.querySelectorAll('.todo-block'));
@@ -1158,7 +1167,7 @@
 
         const payload = {
             date: dateStr,
-            pri: exportPri,
+            pri: exportPri, // Only checked items
             todo: exportTodos, 
             line: timelineData, 
             note: document.getElementById('mainNote').innerText, // 텍스트만 추출
@@ -1181,8 +1190,8 @@
         .then(response => response.json())
         .then(data => {
             if(data.result === 'success') {
-                alert("성공적으로 저장되었습니다!\n체크되지 않은 ToDo만 남기고 초기화합니다.");
-                resetAndRestore(keptTodos);
+                alert("성공적으로 저장되었습니다!\n체크되지 않은 항목만 남기고 초기화합니다.");
+                resetAndRestore(keptTodos, keptPri);
             } else {
                 alert("전송 실패: " + data.error);
             }
@@ -1190,16 +1199,17 @@
         .catch(error => {
             console.error('Export Error:', error);
             alert("전송 요청 완료! (데이터 확인 요망)\n화면을 정리합니다.");
-            resetAndRestore(keptTodos);
+            resetAndRestore(keptTodos, keptPri);
         })
         .finally(() => {
             btn.innerText = originalText;
         });
     }
 
-    function resetAndRestore(keptTodos) {
+    function resetAndRestore(keptTodos, keptPri) {
         // 1. 전체 초기화 (Priority, TimeLine, Note, Sp, Sum)
-        document.querySelectorAll('#priorityBox .priority-row').forEach(row => {
+        const priRows = document.querySelectorAll('#priorityBox .priority-row');
+        priRows.forEach(row => {
             row.querySelector('textarea').value = '';
             row.querySelector('input[type="checkbox"]').checked = false;
         });
@@ -1210,7 +1220,17 @@
         document.getElementById('mainNote').innerHTML = '';
         ['sp1', 'sp2', 'sp3', 'thanksText', 'summaryText'].forEach(id => document.getElementById(id).value = '');
 
-        // 2. ToDo 전체 초기화
+        // 2. Restore Priority (Shift Up)
+        if (keptPri && keptPri.length > 0) {
+            keptPri.forEach((text, index) => {
+                if (priRows[index]) {
+                    priRows[index].querySelector('textarea').value = text;
+                    // Checkbox remains unchecked
+                }
+            });
+        }
+
+        // 3. ToDo 전체 초기화
         const blocks = document.querySelectorAll('.todo-block');
         blocks.forEach(r => {
             r.querySelector('.t-start').value = '';
@@ -1223,17 +1243,14 @@
             if(p) updatePriorityUI(p, '0'); 
         });
 
-        // 3. 체크 안 된 ToDo만 상단부터 다시 채워넣기 (Shift Up)
+        // 4. 체크 안 된 ToDo만 상단부터 다시 채워넣기 (Shift Up)
         keptTodos.forEach((item, index) => {
             if(blocks[index]) {
                 blocks[index].querySelector('.t-start').value = item.s;
                 blocks[index].querySelector('.t-end').value = item.e; 
                 blocks[index].querySelector('.todo-content').value = item.t;
                 
-                // 체크는 해제 상태로 유지 (새로 시작하니까)
-                
                 const p = blocks[index].querySelector('.priority-current');
-                // 기존 item.p_val 값을 이용하여 UI 업데이트. p_val이 없는 경우 '0'으로 처리
                 if(p) updatePriorityUI(p, item.p_val || '0');
             }
         });
