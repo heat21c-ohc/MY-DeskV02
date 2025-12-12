@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Smart Dashboard V14 (Manual Input Added)</title>
+    <title>My Smart Dashboard V15 (TimeStamp)</title>
     <style>
         :root {
             /* Light Theme Variables */
@@ -51,7 +51,7 @@
         .btn { border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
         .btn-export { background-color: var(--primary-blue); }
         .btn-reset { background-color: var(--danger-red); }
-        .btn-theme { background-color: var(--dark-gray); } /* Dark Mode Toggle */
+        .btn-theme { background-color: var(--dark-gray); } 
         .btn-logout { background-color: #757575; }
 
         .user-info { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: bold; color: var(--dark-blue); }
@@ -66,13 +66,16 @@
         /* 작은 버튼 스타일 */
         .btn-sm { padding: 4px 8px; font-size: 11px; background-color: transparent; color: var(--primary-blue); border: 1px solid var(--primary-blue); border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; transition: 0.2s; }
         .btn-sm:hover { background-color: var(--primary-blue); color: white; }
+        .btn-ts { cursor: pointer; border: none; background: transparent; font-size: 14px; margin-left: 5px; opacity: 0.6; transition: 0.2s; }
+        .btn-ts:hover { opacity: 1; transform: scale(1.2); }
 
         /* Grid Layout */
         .container { display: grid; grid-template-columns: 28% 22% 48%; gap: 15px; min-height: 850px; height: calc(100vh - 100px); }
         .column { display: flex; flex-direction: column; gap: 15px; height: 100%; }
         .card { background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 15px; display: flex; flex-direction: column; border: 1px solid var(--border-color); transition: background 0.3s, border-color 0.3s; }
         
-        .section-title { font-size: 14px; font-weight: 700; color: var(--soft-gray); text-transform: uppercase; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px; transition: color 0.3s; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px; }
+        .section-title { font-size: 14px; font-weight: 700; color: var(--soft-gray); text-transform: uppercase; transition: color 0.3s; margin: 0; }
         .title-dark-blue { color: var(--dark-blue) !important; opacity: 1; }
         .title-red { color: var(--danger-red) !important; opacity: 1; }
 
@@ -197,7 +200,7 @@
 
 <div id="loginOverlay">
     <div class="login-card">
-        <h2 style="color:#1e3a8a; margin-bottom:10px;">My Cloud Dashboard V14</h2>
+        <h2 style="color:#1e3a8a; margin-bottom:10px;">My Cloud Dashboard V15</h2>
         <p style="color:#666; font-size:14px; margin-bottom:30px;">
             PC와 스마트폰 동기화 지원<br>로그인하여 시작하세요.
         </p>
@@ -213,7 +216,7 @@
 </div>
 
 <header>
-    <h1>Dashboard V14</h1>
+    <h1>Dashboard V15</h1>
     <div class="controls">
         <span class="date-display" id="headerDate">Loading...</span>
         <button class="btn btn-theme" onclick="toggleTheme()" title="다크 모드 전환">🌙</button>
@@ -230,7 +233,9 @@
 <div class="container">
     <div class="column">
         <div class="card" style="flex: 0 0 auto;">
-            <div class="section-title title-red">Top Priority 3</div>
+            <div class="section-header">
+                <div class="section-title title-red">Top Priority 3</div>
+            </div>
             <div id="priorityBox">
                 <div class="priority-row">
                     <input type="checkbox" class="priority-check">
@@ -247,8 +252,8 @@
             </div>
         </div>
         <div class="card" style="flex: 1 1 auto;">
-            <div class="section-title title-dark-blue" style="display:flex; justify-content:space-between; align-items:center;">
-                To Do List
+            <div class="section-header">
+                <div class="section-title title-dark-blue">To Do List</div>
                 <span style="font-size:11px; font-weight:normal; color:var(--soft-gray);">Drag to Reorder</span>
             </div>
             <!-- Progress Bar Added -->
@@ -264,7 +269,9 @@
     
     <div class="column">
         <div class="card" style="height: 100%;">
-            <div class="section-title title-dark-blue">Time Line</div>
+            <div class="section-header">
+                <div class="section-title title-dark-blue">Time Line</div>
+            </div>
             <div class="scroll-box" id="timelineBox"></div>
         </div>
     </div>
@@ -281,7 +288,12 @@
         </div>
 
         <div class="card note-card">
-            <div class="section-title title-dark-blue">Note</div>
+            <div class="section-header">
+                <div class="section-title title-dark-blue">
+                    Note 
+                    <button class="btn-ts" onclick="insertTimestamp('mainNote')" title="오늘 날짜/시간 추가">📅</button>
+                </div>
+            </div>
             <div class="editor-toolbar">
                 <select class="editor-select" onchange="formatDoc('fontSize', this.value); this.value='';">
                     <option value="" selected disabled>크기</option>
@@ -307,17 +319,43 @@
         </div>
 
         <div class="card sp-card">
-            <div class="section-title title-dark-blue">경건생활</div>
+            <div class="section-header">
+                <div class="section-title title-dark-blue">
+                    경건생활
+                    <button class="btn-ts" onclick="insertTimestampToAllSp()" title="모든 칸에 날짜 추가">📅</button>
+                </div>
+            </div>
             <div class="sp-grid">
-                <div class="sp-item"><span class="sp-label bg-green">실천</span><textarea class="sp-text" id="sp1"></textarea></div>
-                <div class="sp-item"><span class="sp-label bg-orange">반성</span><textarea class="sp-text" id="sp2"></textarea></div>
-                <div class="sp-item"><span class="sp-label bg-purple">소망</span><textarea class="sp-text" id="sp3"></textarea></div>
+                <div class="sp-item">
+                    <span class="sp-label bg-green">실천</span>
+                    <textarea class="sp-text" id="sp1" onfocus="autoInsertDate(this)"></textarea>
+                </div>
+                <div class="sp-item">
+                    <span class="sp-label bg-orange">반성</span>
+                    <textarea class="sp-text" id="sp2" onfocus="autoInsertDate(this)"></textarea>
+                </div>
+                <div class="sp-item">
+                    <span class="sp-label bg-purple">소망</span>
+                    <textarea class="sp-text" id="sp3" onfocus="autoInsertDate(this)"></textarea>
+                </div>
             </div>
         </div>
         <div class="card sum-card">
             <div class="sum-grid">
-                <div class="sum-item thanks"><span class="sum-label">THANKS GOD</span><textarea class="sum-text" id="thanksText"></textarea></div>
-                <div class="sum-item summary"><span class="sum-label">SUMMARY</span><textarea class="sum-text" id="summaryText"></textarea></div>
+                <div class="sum-item thanks">
+                    <div style="display:flex; justify-content:center; align-items:center; gap:5px; margin-bottom:5px;">
+                        <span class="sum-label" style="margin:0;">THANKS GOD</span>
+                        <button class="btn-ts" onclick="insertTimestamp('thanksText')" title="날짜 추가">📅</button>
+                    </div>
+                    <textarea class="sum-text" id="thanksText" onfocus="autoInsertDate(this)"></textarea>
+                </div>
+                <div class="sum-item summary">
+                    <div style="display:flex; justify-content:center; align-items:center; gap:5px; margin-bottom:5px;">
+                        <span class="sum-label" style="margin:0;">SUMMARY</span>
+                        <button class="btn-ts" onclick="insertTimestamp('summaryText')" title="날짜 추가">📅</button>
+                    </div>
+                    <textarea class="sum-text" id="summaryText" onfocus="autoInsertDate(this)"></textarea>
+                </div>
             </div>
         </div>
     </div>
@@ -583,6 +621,76 @@
         const percent = total === 0 ? 0 : Math.round((checked / total) * 100);
         document.getElementById('progressBar').style.width = percent + '%';
         document.getElementById('progressText').innerText = percent + '%';
+    }
+
+    /* --- Timestamp & Auto Insert Logic --- */
+
+    function getDateString() {
+        const now = new Date();
+        const yy = now.getFullYear();
+        const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+        const dd = now.getDate().toString().padStart(2, '0');
+        const hh = now.getHours().toString().padStart(2, '0');
+        const mi = now.getMinutes().toString().padStart(2, '0');
+        return `[${yy}-${mm}-${dd} ${hh}:${mi}] `;
+    }
+
+    window.insertTimestamp = function(elId) {
+        const el = document.getElementById(elId);
+        if(!el) return;
+        const ts = getDateString();
+        
+        if (el.isContentEditable) { // For Rich Text Div (Note)
+            el.focus();
+            // 맨 뒤에 추가
+            const textNode = document.createTextNode(ts);
+            el.appendChild(textNode);
+            // 커서를 끝으로
+            const range = document.createRange();
+            const sel = window.getSelection();
+            range.selectNodeContents(el);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } else { // For Textarea
+            const start = el.selectionStart;
+            const end = el.selectionEnd;
+            const val = el.value;
+            const before = val.substring(0, start);
+            const after = val.substring(end);
+            
+            // 앞부분이 있고 줄바꿈이 아니면 줄바꿈 추가
+            let prefix = "";
+            if (before.length > 0 && !before.endsWith('\n')) {
+                prefix = "\n";
+            }
+            
+            el.value = before + prefix + ts + after;
+            el.selectionStart = el.selectionEnd = start + prefix.length + ts.length;
+            el.focus();
+        }
+        if(window.appSave) window.appSave();
+    };
+
+    window.insertTimestampToAllSp = function() {
+        ['sp1','sp2','sp3'].forEach(id => {
+           const el = document.getElementById(id);
+           if(el.value.trim() === "") {
+               el.value = getDateString();
+           } else {
+               // 이미 내용이 있으면 건드리지 않거나, 원하면 아래 주석 해제하여 추가 가능
+               // el.value += "\n" + getDateString();
+           }
+        });
+        if(window.appSave) window.appSave();
+    }
+
+    // 빈 칸일 때 포커스하면 자동으로 날짜 입력
+    window.autoInsertDate = function(el) {
+        if(el.value.trim() === "") {
+            el.value = getDateString();
+            if(window.appSave) window.appSave();
+        }
     }
 
     /* --- Data Handling --- */
@@ -922,7 +1030,6 @@
             itemInsert.style.display = 'block';
             itemInsert.innerText = "현재 날짜 입력";
         } else if (type === 'todo-menu') {
-            // [추가] ToDo 메뉴: 수동 입력, 초기화, 현재시간 입력 모두 표시
             itemManual.style.display = 'block';
             itemClear.innerText = '초기화';
             itemInsert.style.display = 'block';
