@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Smart Dashboard V13 (Smart Input)</title>
+    <title>My Smart Dashboard V14 (Manual Input Added)</title>
     <style>
         :root {
             /* Light Theme Variables */
@@ -197,7 +197,7 @@
 
 <div id="loginOverlay">
     <div class="login-card">
-        <h2 style="color:#1e3a8a; margin-bottom:10px;">My Cloud Dashboard V13</h2>
+        <h2 style="color:#1e3a8a; margin-bottom:10px;">My Cloud Dashboard V14</h2>
         <p style="color:#666; font-size:14px; margin-bottom:30px;">
             PC와 스마트폰 동기화 지원<br>로그인하여 시작하세요.
         </p>
@@ -213,7 +213,7 @@
 </div>
 
 <header>
-    <h1>Dashboard V13</h1>
+    <h1>Dashboard V14</h1>
     <div class="controls">
         <span class="date-display" id="headerDate">Loading...</span>
         <button class="btn btn-theme" onclick="toggleTheme()" title="다크 모드 전환">🌙</button>
@@ -711,7 +711,7 @@
                     <input type="text" class="date-input t-start" placeholder="시작" readonly 
                            onclick="handleDateClick(this)"
                            onkeydown="handleInputKey(event, this, 'date-kr')"
-                           oncontextmenu="openCtx(event, this, 'reset-only')">
+                           oncontextmenu="openCtx(event, this, 'todo-menu')">
                     <input type="text" class="date-input t-end" placeholder="마침" readonly>
                 </div>
                 <div class="todo-body">
@@ -835,8 +835,6 @@
         }
         // 2. Time Only (HHMM or HMM - 3~4 digits) -> Use Today's Date
         else if (nums.length === 3 || nums.length === 4) {
-            // "12-11" input becomes "1211" -> 12:11 today
-            // "1211" input becomes "1211" -> 12:11 today
             if (nums.length === 4) {
                 hour = parseInt(nums.substring(0, 2));
                 minute = parseInt(nums.substring(2, 4));
@@ -848,7 +846,6 @@
             return null; // Invalid format
         }
 
-        // Validate valid ranges
         if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
             return null;
         }
@@ -922,6 +919,14 @@
         } else if (type === 'time-menu') {
             itemManual.style.display = 'block'; 
             itemClear.innerText = '초기화';
+            itemInsert.style.display = 'block';
+            itemInsert.innerText = "현재 날짜 입력";
+        } else if (type === 'todo-menu') {
+            // [추가] ToDo 메뉴: 수동 입력, 초기화, 현재시간 입력 모두 표시
+            itemManual.style.display = 'block';
+            itemClear.innerText = '초기화';
+            itemInsert.style.display = 'block';
+            itemInsert.innerText = "현재 시간 입력";
         } else {
             itemInsert.style.display = 'block';
             itemInsert.innerText = "오늘 날짜 입력";
@@ -1139,5 +1144,3 @@
 </script>
 </body>
 </html>
-
-
